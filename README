@@ -1,0 +1,124 @@
+Group members
+Mohit Bharaney - 49953911
+Sanyogita Ranade - 61158129
+------------------------------------------------------------------------------------------------------------------------------
+Instructions to run the project
+The attached tar contains a folder which contains all the scala files and the libraries needed to run the folder.
+project1.scala is the main file to run the project.
+Please run the project using scala 2.11.2
+
+Extract the project folder.
+
+Go to bin folder of scala 2.11.2 and run below commands to run server/master program
+./scalac -cp "<Project_folder_path>/Lib/*:." <Project_folder_path>/src/*.scala
+ /usr/bin/time -p ./scala -cp "<Project_folder_path>/Lib/*:." project1 <no_of_zeros>
+
+Go to bin folder of scala 2.11.2 and run below commands to run client/worker program
+./scalac -cp "<Project_folder_path>/Lib/*:." <Project_folder_path>/src/*.scala
+ /usr/bin/time -p ./scala -cp "<Project_folder_path>/Lib/*:." project1 <ip_address_server>
+------------------------------------------------------------------------------------------------------------------------------
+Results
+
+Size of the work unit that you determined results in best performance for
+your implementation and an explanation on how you determined it. Size
+of the work unit refers to the number of sub-problems that a worker gets
+in a single request from the boss.
+
+----> We got best results for the work unit of 25000. We kept a count of number of records processed per second by each worker and for 25000 we got the most number of processed records.
+Results for this are given below.
+
+The result of running program for 
+scala project1.scala 4
+On three machines with batch size 10000
+
+Machine 1
+CPU time (seconds) - 1923.29
+System time (seconds) - 29.43
+Real time (seconds) - 301.70
+
+Machine 2
+CPU time (seconds) - 1709.69
+System time (seconds) - 24.21
+Real time (seconds) - 299.87
+
+Machine 3
+CPU time (seconds) - 2115.20
+System time (seconds) - 24.89
+Real time (seconds) - 298.05
+
+Total number of bitcoins - 1609 (486+514+609)
+Total number of records processed - 104520000 (32020000+33410000+39090000)
+---------------------------------------------------------------------------
+The result of running program for 
+scala project1.scala 4
+On three machines with batch size 25000
+
+Machine 1
+CPU time (seconds) - 1983.55
+System time (seconds) - 31.41
+Real time (seconds) - 302.39
+
+Machine 2
+CPU time (seconds) - 2115.89
+System time (seconds) - 10.24
+Real time (seconds) - 301.49
+
+Machine 3
+CPU time (seconds) - 2057.07
+System time (seconds) - 24.37
+Real time (seconds) - 298.28
+
+Total number of bitcoins - 1725 (597+592+536)
+Total number of records processed - 111625000 (38225000+38225000+35025000)
+--------------------------------------------------------------------------
+The result of running program for 
+scala project1.scala 4
+On three machines with batch size 50000
+
+Machine 1
+CPU time (seconds) - 1268.21
+System time (seconds) - 24.34
+Real time (seconds) - 303.10
+
+Machine 2
+CPU time (seconds) - 2097.57
+System time (seconds) - 11.20
+Real time (seconds) - 300.49
+
+Machine 3
+CPU time (seconds) - 1284.83
+System time (seconds) - 19.97
+Real time (seconds) - 297.67
+
+Total number of bitcoins - 1292 (321+365+606)
+Total number of records processed - 82625000 (20650000+23025000+38950000)
+------------------------------------------------------------------------------------------------------------------------------
+The result of running program for on two machines
+scala project1.scala 4
+real 300.49
+user 2097.57
+sys 11.20
+ratio 6.99
+
+The bitcoins are present in the file four_zeros_output.txt in the results folder
+--------------------------------------------------------------------------
+The result of running your program for on two machines
+scala project1.scala 5
+real 278.05
+user 2015.89
+sys 24.10
+ratio 7.25
+
+The bitcoins are present in the file five_zeros_output.txt in the results folder
+------------------------------------------------------------------------------------------------------------------------------
+The coin with the most 0s you managed to find.
+
+----> We could find coin with 6 zeros.
+sanyogita.ranadeA9984175	00000039c8fce46d1ce476841c01801e7daaf4003a727fe4e744127956001f8a
+------------------------------------------------------------------------------------------------------------------------------
+The largest number of working machines you were able to run your code with.
+
+----> We were able to run our program with 5 machines.
+------------------------------------------------------------------------------------------------------------------------------
+
+

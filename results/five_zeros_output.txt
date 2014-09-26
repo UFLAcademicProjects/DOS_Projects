@@ -1,0 +1,60 @@
+[INFO] [09/19/2014 15:19:05.767] [main] [Remoting] Starting remoting
+[INFO] [09/19/2014 15:19:06.123] [main] [Remoting] Remoting started; listening on addresses :[akka.tcp://bitcoinServer@128.227.248.172:2552]
+[INFO] [09/19/2014 15:19:06.128] [main] [Remoting] Remoting now listens on addresses: [akka.tcp://bitcoinServer@128.227.248.172:2552]
+Number of zeros to be checked :: 5
+[INFO] [09/19/2014 15:24:06.205] [bitcoinServer-akka.actor.default-dispatcher-4] [akka://bitcoinServer/user/master/$c] Message [scala.Tuple3] from Actor[akka://bitcoinServer/user/master#1505275227] to Actor[akka://bitcoinServer/user/master/$c#1028902603] was not delivered. [1] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [09/19/2014 15:24:06.420] [bitcoinServer-akka.actor.default-dispatcher-19] [akka://bitcoinServer/user/master/$b] Message [scala.Tuple3] from Actor[akka://bitcoinServer/user/master#1505275227] to Actor[akka://bitcoinServer/user/master/$b#112878438] was not delivered. [2] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [09/19/2014 15:24:06.839] [bitcoinServer-akka.actor.default-dispatcher-2] [akka://bitcoinServer/user/master/$f] Message [scala.Tuple3] from Actor[akka://bitcoinServer/user/master#1505275227] to Actor[akka://bitcoinServer/user/master/$f#-337784205] was not delivered. [3] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [09/19/2014 15:24:06.877] [bitcoinServer-akka.actor.default-dispatcher-2] [akka://bitcoinServer/user/master/$g] Message [scala.Tuple3] from Actor[akka://bitcoinServer/user/master#1505275227] to Actor[akka://bitcoinServer/user/master/$g#-781953497] was not delivered. [4] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [09/19/2014 15:24:06.952] [bitcoinServer-akka.actor.default-dispatcher-19] [akka://bitcoinServer/user/master/$h] Message [scala.Tuple3] from Actor[akka://bitcoinServer/user/master#1505275227] to Actor[akka://bitcoinServer/user/master/$h#1980495401] was not delivered. [5] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [09/19/2014 15:24:07.116] [bitcoinServer-akka.actor.default-dispatcher-2] [akka://bitcoinServer/user/master/$a] Message [scala.Tuple3] from Actor[akka://bitcoinServer/user/master#1505275227] to Actor[akka://bitcoinServer/user/master/$a#-1268307231] was not delivered. [6] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [09/19/2014 15:24:07.128] [bitcoinServer-akka.actor.default-dispatcher-19] [akka://bitcoinServer/user/master/$e] Message [scala.Tuple3] from Actor[akka://bitcoinServer/user/master#1505275227] to Actor[akka://bitcoinServer/user/master/$e#213964288] was not delivered. [7] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [09/19/2014 15:24:07.335] [bitcoinServer-akka.actor.default-dispatcher-19] [akka://bitcoinServer/user/master/$d] Message [scala.Tuple3] from Actor[akka://bitcoinServer/user/master#1505275227] to Actor[akka://bitcoinServer/user/master/$d#1551082338] was not delivered. [8] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+sanyogita.ranadeA13249033	00000f58adba8a94ae2f8781e610201bfd6800bace8a20be63083953f3b7f89b
+sanyogita.ranadeA14901189	0000063003432092524f9d11aa0e223dde01287c1470629d8363273de8445381
+sanyogita.ranadeA9050018	00000dbaa925c44311c8f49ed5f9b121a1e68f7279bb619fdea8fcd490fc5cb0
+sanyogita.ranadeA20358155	00000280a1df987f05e6777228e0e903ebcb3ec345baad678d863243757d946a
+sanyogita.ranadeA20912758	0000040c7e009fe0220911139d7583903d6e6417d8a6859f54fe538dd1ae2c52
+sanyogita.ranadeA3816643	00000fed78075994b82261caaa3e90985cfbcd9c8a0c893ddecf5fd3a2daab8b
+sanyogita.ranadeA9926674	0000063db136d068d133f5c7ea89b187ec8116671cd6be29fcffa140c09b10ec
+sanyogita.ranadeA13845002	00000fe941a618d9378c84d88100412199cf8d2a2a9894d5cbf01f82e5404366
+sanyogita.ranadeA12972446	000008506b836a169359cd6c2ba67fda9310ed7ef82147f60f4e2d92db50c0d6
+sanyogita.ranadeA17430651	00000a4e0d45301f73da6500e7c9662882b59bd1f4d50ac95ebd000036725571
+sanyogita.ranadeA9984175	00000039c8fce46d1ce476841c01801e7daaf4003a727fe4e744127956001f8a
+sanyogita.ranadeA19066810	0000026bea2113ed3249fa636bafc7c29d1c8caf09ab1844f0c7b2f334f0ace2
+sanyogita.ranadeA7120590	00000d8fb0393d29a49f29c0f7a9bb19ae5510f80aa86239f390d6a23bc7cd45
+sanyogita.ranadeA6366408	00000e2abc4c15886263729779f4904284f5be776101ea4642f71e07ebfb2c96
+sanyogita.ranadeA15408623	00000c950cd9e1600496be9080e654d6300e4fe65a9d7bde658c1cf08abf45ee
+sanyogita.ranadeAA23925628	00000691c3627d66be994d12c2ddca48d485dd81c92d78709532ec4bf9744239
+sanyogita.ranadeAA21169810	0000034e5b0617bd99baacdd373fb7f62faa357060d013d10d14a6fe5344ad31
+sanyogita.ranadeAA12789387	00000cad825766e6ca2db890a8d88d2c10e24a2608f2af0a2af8a87815c0c379
+sanyogita.ranadeAA18511061	00000aa26c3382953fdc1b5afd48a124df74475025b589a33b64fc09f5ceb9dc
+sanyogita.ranadeAA25566718	00000f1c12e4c1a2613cd6a32cd07f382f1494fbbd1b3672bf0d244ecbbc7958
+sanyogita.ranadeAA11081973	00000f94094ce71d0ea6c0a446b85a11d31de4f4def3c5b6e28bc5f11aed2fb9
+sanyogita.ranadeAA2706418	0000094e3b554b43023e4684efcc603438ca2ccde6102c999c45c4c94f1ee602
+sanyogita.ranadeAA36291605	00000862f527254fe839597059edd0fdc2f61d730797da5fcd5e25bbec583e29
+sanyogita.ranadeAA19468137	00000ea29ec4d5b9a6ce2ece67f7be9b09b8eba5a69d8c9d7959945735d19932
+sanyogita.ranadeAA5376137	000002f11a678621959eb9890a27e7fee7fc64fea5dcb71dd495afeac6faf2c5
+sanyogita.ranadeAA27866538	00000c346e5ff878aa55730936a5cbe19e9eaad89b6be496e786c47768f94149
+sanyogita.ranadeAA8265917	000005216aca6547dcaeca933cb7451fb940398f5f256509ff29560f93cfb99f
+sanyogita.ranadeAA35842970	00000856f9bd1f5bd0832cc50f8b7c2863ad9fbcac793ed66413fecb20e8d513
+sanyogita.ranadeAA21623424	000009f377ac79fc0e6aa552fdf9239023f2966cce83e431a49b8b661cd5a181
+sanyogita.ranadeAA36146353	000006b86eaa2ec58c4826341dfd0884ea257c5eaaa9d7b0895a8456eb34d324
+sanyogita.ranadeAA19788172	00000b70c9173edfedcf6d6d9ae682970a94eff1157d2587cbeb5622e1168655
+sanyogita.ranadeAA9856656	00000f4cfeaaddc3fb757fee1ee94d24197881e6c6dfc14c62695fcd75f19ae7
+sanyogita.ranadeAA24890557	0000074e16379f091e9014df83e1bfc3fa50a9894b0af82ed71b95f72b72d864
+sanyogita.ranadeAA24421468	000006ac53ce5dd8346a9c7ced888e3118706ed0412b7ad14ba6b2a930508735
+sanyogita.ranadeAA38392235	0000063523513f6d5b44a11793fd8f5c0a52dd514b3e3d5be0f41334e86f454f
+sanyogita.ranadeAA24388284	0000019c0172220f8ec876c17ec2627d04956a3ef58f248393e1947df75b9420
+sanyogita.ranadeAA29350169	00000e3a1820f279bcd06b6ecc22c708af7dd581d7858b2db461fc3dd08e7893
+sanyogita.ranadeAA15704795	00000552f30427f32ab5663edbaa8b6bc116cff406676f55c28031b7d651d864
+sanyogita.ranadeAA5938865	000004b403628c184346762396b68779a328b6275a2f69a016e8dc2b84c638d2
+sanyogita.ranadeAA29174958	000004d0cf0683db77cb315f5efa212004c4d60bfabcdd64512dc7e2071a725c
+sanyogita.ranadeAA8776699	0000068d55d4f91b7ae839431abbd0de7e887665a019a71ab1b274e50e8832f7
+sanyogita.ranadeAA35168147	000000b21205ce803013cc81e20e330b36073ebb96a14aa618530106c73c1648
+[INFO] [09/19/2014 15:24:07.518] [bitcoinServer-akka.remote.default-remote-dispatcher-6] [akka.tcp://bitcoinServer@128.227.248.172:2552/system/remoting-terminator] Shutting down remote daemon.
+[INFO] [09/19/2014 15:24:07.520] [bitcoinServer-akka.remote.default-remote-dispatcher-6] [akka.tcp://bitcoinServer@128.227.248.172:2552/system/remoting-terminator] Remote daemon shut down; proceeding with flushing remote transports.
+[INFO] [09/19/2014 15:24:07.535] [bitcoinServer-akka.actor.default-dispatcher-2] [akka://bitcoinServer/system/endpointManager/reliableEndpointWriter-akka.tcp%3A%2F%2FbitcoinServer%40128.227.248.185%3A2552-0/endpointWriter/endpointReader-akka.tcp%3A%2F%2FbitcoinServer%40128.227.248.185%3A2552-0] Message [akka.remote.transport.AssociationHandle$Disassociated] from Actor[akka://bitcoinServer/deadLetters] to Actor[akka://bitcoinServer/system/endpointManager/reliableEndpointWriter-akka.tcp%3A%2F%2FbitcoinServer%40128.227.248.185%3A2552-0/endpointWriter/endpointReader-akka.tcp%3A%2F%2FbitcoinServer%40128.227.248.185%3A2552-0#667558328] was not delivered. [9] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [09/19/2014 15:24:07.542] [bitcoinServer-akka.actor.default-dispatcher-19] [akka://bitcoinServer/system/transports/akkaprotocolmanager.tcp0/akkaProtocol-tcp%3A%2F%2FbitcoinServer%40128.227.248.185%3A60089-1] Message [akka.remote.transport.AssociationHandle$Disassociated] from Actor[akka://bitcoinServer/deadLetters] to Actor[akka://bitcoinServer/system/transports/akkaprotocolmanager.tcp0/akkaProtocol-tcp%3A%2F%2FbitcoinServer%40128.227.248.185%3A60089-1#-1282163187] was not delivered. [10] dead letters encountered, no more dead letters will be logged. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [09/19/2014 15:24:07.550] [ForkJoinPool-3-worker-15] [Remoting] Remoting shut down
+[INFO] [09/19/2014 15:24:07.551] [bitcoinServer-akka.remote.default-remote-dispatcher-6] [akka.tcp://bitcoinServer@128.227.248.172:2552/system/remoting-terminator] Remoting shut down.
