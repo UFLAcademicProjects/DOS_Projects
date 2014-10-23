@@ -14,7 +14,8 @@ object project3 extends App{
 	 */
 	var masterActor = myActorSystem.actorOf(
 	    Props(new Master(args(0).toInt, args(1).toInt)), name = "MasterActor")
-	
-	masterActor ! "CreatePeers"
+	    
+	  	masterActor ! "CreatePeers"
 
 }
+

@@ -1,15 +1,20 @@
 import akka.actor.Actor
 import akka.actor.Props
-
 import scala.util.Random
+import akka.actor.ActorSelection
 
 class Master(val numOfPeers: BigInt, val numOfRequests:Long) extends Actor{
   
   /**
    * This map contains the x,y locations of the peers stored against the actor number
    */
-  var actorLocations: Map[BigInt,String] = Map()
+ // var actorLocations: Map[BigInt,String] = Map()
+  /**
+   * Contains all the actors created
+   */
+  var actorList:List[BigInt] = List()
   var random:Random=new Random
+  
   
   
   def receive={
@@ -18,43 +23,48 @@ class Master(val numOfPeers: BigInt, val numOfRequests:Long) extends Actor{
       
       	println("Create Peers")
       	
-        var start:BigInt = 0
+      	/*Because 0th peer is created separately*/
+        var start:BigInt = 1
         var xcor:BigInt = 0
         var ycor:BigInt = 0
+        
         /**
-         * 	Create peers one by one
-         */        
-        for(count <- start until numOfPeers){
-          
-          /**
-           * Generate random x,y locations
-           */
-          xcor = random.nextLong()
-          ycor = random.nextLong()
-          
-          /**
-           * Generate actor
-           */
-          var actorName:String = "Peer" + count.toString;
-          /**
-           * We are using a specific delimiter 
-           * to combine and store x,y locations of the peer
-           */
-          var combinedLocation:String = xcor.toString + "::" + ycor.toString
-          var peerActor = context.actorOf(Props(new Peer(count, xcor, ycor)), name = actorName);
-          /**
-           * We need to make sure that we consider 
-           * only THOSE neighbors whose state tables are initialized completely.
-           * Hence immediately after the creation of the peer, send a message to the peer to
-           * create state tables.
-           */
-          peerActor ! ("Create State Tables", actorLocations)
-          /**
-           * After sending peer the map containing previous peers, 
-           * add this peer info in the map and proceed with the creation of next peer
-           */
-          actorLocations +=  (count -> combinedLocation)
-        }
+         * Create the initial peer
+         */
+        var zeroActorName:BigInt = 0
+        var zeroPeerActor = context.actorOf(Props(new Peer(zeroActorName, numOfPeers)), name = 0.toString);
+      	      	
+        self ! ("State Tables Ready", zeroActorName)
+      	
+    case ("State Tables Ready", peerNumber:BigInt) =>
+        /**
+         * Once the peer is ready with the state tables, it sends it back to the master
+         */
+      	actorList = actorList :+ peerNumber
+      	
+      	if(actorList.size < numOfPeers){
+      	  
+      	  var count:BigInt =  actorList.size
+      	  /**
+      	   * Create the subsequent peer
+         */
+      	  var actorName:BigInt = count
+          var newCreatedPeer = context.actorOf(Props(new Peer(actorName, numOfPeers)), name = count.toString);
+      	
+      	  var randomNeighbor = random.nextInt(actorList.size)
+      	//  println("Value of random neighbor is " + actorList(randomNeighbor))
+     	  var actorSel : ActorSelection = context.actorSelection(actorList(randomNeighbor).toString)
+      	  newCreatedPeer ! ("Create State Tables", actorSel)
+      	}
+      	else{
+      	  context.actorSelection("698") ! ("Route", (BigInt)(11), 0)
+      	  context.actorSelection("398") ! ("Route", (BigInt)(11), 0)
+      	  context.actorSelection("39") ! ("Route", (BigInt)(110), 0)
+      	  context.actorSelection("20") ! ("Route", (BigInt)(27), 0)
+      	  context.actorSelection("40") ! ("Route", (BigInt)(33), 0)
+      	  //context.actorSelection("698") ! ("Route", (BigInt)(11), 0)
+      	  //context.actorSelection("698") ! ("Route", (BigInt)(11), 0)
+      	}
     
     case _=>
     	println("-----------Default case Master");
