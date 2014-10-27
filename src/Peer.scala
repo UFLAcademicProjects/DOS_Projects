@@ -3,8 +3,13 @@ import javax.xml.crypto.dsig.keyinfo.KeyValue
 import akka.actor.ActorSelection
 import scala.collection.immutable.TreeSet
 import akka.actor.ActorRef
+import akka.actor.Cancellable
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Random
+import scala.util.control.Breaks
 
-class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
+class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfRequests:BigInt) extends Actor{
 
   var pathString:String = "../";
   var actorNamePrefix:String = "Peer";
@@ -47,17 +52,21 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
    * This list caches all the neighbors on the route from randomly chosen neighbor to logically closest
    */
   var joinPathNeighbors: List[ActorRef] = List();
+  /**
+   * This indicates how many requests were sent by this peer.
+   */
+  var numRequestsSent:BigInt = 0;
+  var cancellable:Cancellable=null;
+  var random:Random = new Random;
     
   def receive ={
     
     case ("Create State Tables", entryPoint:ActorSelection) =>
    
-     // 	println("Inside Create state tables" + ownPeerNumber );
         entryPoint ! ("Join", ownPeerNumber)
       
     case ("Join", keySentByPeer:BigInt) =>
       
-   //   println("Join sent by " + keySentByPeer + " to the peer " + ownPeerNumber);    
       var checkRouting=checkNodeForLeafSet(keySentByPeer)
       if(!checkRouting)
       {
@@ -92,51 +101,84 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
     case ("Route", destination:BigInt, hopCount:Int) =>
       
        var checkRouting=routeMessageViaLeafSet(destination,hopCount)
-      if(!checkRouting)
-      {
-        var routingFlag=routeMessageViaRoutingTable(destination, hopCount)
-        if(!routingFlag){
+       if(!checkRouting)
+       {
+    	   var routingFlag=routeMessageViaRoutingTable(destination, hopCount)
+    	   if(!routingFlag){
         	routeToClosestMatch(destination, hopCount)
-        }
-      }
+           }
+       }
       
-    case ("Terminate" , leafSetOfHop:List[BigInt], routingTablesOfHop: Array[Array[String]]) =>  
+    case ("Terminate" , leafSetOfHop:List[BigInt], routingTablesOfHop: Array[Array[String]],neighbor:BigInt) =>  
+      
+      /**
+       * Send updated state tables 
+       * to all the nodes on the joining paths
+       */
+      updateStateTables(leafSetOfHop, routingTablesOfHop, neighbor)
       for(onPath<-joinPathNeighbors ){
-        onPath ! ("update",leafList ,routingTable,ownPeerNumber )
+        onPath ! ("update",leafList ,routingTable,ownPeerNumber)
       }
-      
+      /**
+       * Send the updated state tables to all neighbors 
+       * from leaf set as well as routing table
+       */
       var finalSet=leafList.toSet
       for(row<-0 until 16){
         for(col<-0 until 16){
-          if(routingTable (row)(col)!=null && !routingTable (row)(col).equalsIgnoreCase("special"))
+          if(routingTable (row)(col)!=null && !routingTable (row)(col).equalsIgnoreCase("SPECIAL"))
           finalSet= finalSet+(Integer.parseInt(routingTable(row)(col), 16))
         }
       }
       
       for(dest<-finalSet){
         var destRef=context.actorSelection("../"+dest)
-        destRef ! ("update",leafList ,routingTable,ownPeerNumber )
+        destRef ! ("update",leafList ,routingTable,ownPeerNumber)
       }
-      
-      
-      
-//      println("i am " + ownPeerNumber +"...................................................................")
-//    //  println("leaf set "+leafList )
-//       for(row<-0 until 16){
-//        for(col<-0 until 16){
-////          if(routingTable (row)(col)!=null && !routingTable (row)(col).equalsIgnoreCase("special"))
-////          finalSet= finalSet+(Integer.parseInt(routingTable(row)(col), 16))
-//          print(routingTable (row)(col)+"\t")
-//        }
-//        println
-//      }
-//      println("............................................................................................")
-//    //case "test"=>
+      /**
+       * Notify master that my state tables are ready
+       */
       context.parent ! ("State Tables Ready", ownPeerNumber)
+    
+      
+    case ("Start Scheduler",actorList:List[BigInt]) =>
+       /**
+       * Start the scheduler to send the request for every second
+       */
+       cancellable= context.system.scheduler.schedule(random.nextInt(100) milliseconds,1000 milliseconds){
+    	  
+          if(numRequestsSent < totalNumOfRequests){
+           
+        	  /**
+               * Choose a random destination
+               */
+              var loop=new Breaks
+              loop.breakable {
+            	  while(true){
+            		  var destination:BigInt = actorList(random.nextInt(actorList.size))
+            		  if(destination != ownPeerNumber){
+            			  /**
+            			   * Send a route message to route the request
+            			   */
+            			  self ! ("Route", destination, 0)
+            			  loop.break
+            		  }
+            	  }
+              }
+    	      numRequestsSent += 1
+    	      
+    	     
+    	  }else{
+    	    //println("Num of requests sent are "+ numRequestsSent);
+    	    /**
+    	     * Stop the scheduler
+    	     */
+    	    cancellable.cancel
+    	  }
+       }
     
     case _ =>
       println("Default Peer case");
-    
     
   }
   
@@ -163,13 +205,13 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
     
   }
   
-  
-  
   /**
    * This function decides if the newly joined peer is a good candidate for leaf set.
    * If it is then this function replaces some not so good candidate with this one. 
    */
   def checkNodeForLeafSet(newPeer:BigInt):Boolean={
+    
+   // println("Join leaf set sent by "+ newPeer + " to " + ownPeerNumber + " and set is " + leafList);
     
     var sortedList:List[BigInt] = leafList.sorted
     
@@ -180,9 +222,9 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
     var (left,right)=sortedList.splitAt(sortedList.indexOf(ownPeerNumber))
     right = right.drop(1)				//drop the original peer no.
     
-    /*
-     * check in left and right if the key needs to be added
-     */
+    
+     /* check in left and right if the key needs to be added*/
+     
     if(newPeer<ownPeerNumber)
     {
       if(left.size<8)
@@ -208,11 +250,8 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
     	}
     }
     
-    
-    
-    /*
-     * join the updated leafset and sort it
-     */
+     /* join the updated leafset and sort it*/
+     
     
     var temp=left++right:+ownPeerNumber
     sortedList=temp.sorted
@@ -252,7 +291,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
     if(nextHop!=ownPeerNumber){
       
       var nextHopRef=context.actorSelection("../"+nextHop)
-      
+    //  println("Join Leaf set , next hop is different");
       sender ! ("Join_nextHop",nextHopRef, leafList, routingTable, ownPeerNumber)
       
     }else{
@@ -260,7 +299,8 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
        * This is the terminating condition since you found the closest neighbor.
        * So send terminate message and your state tables to the new node..... sender !
        */
-      sender ! ("Terminate", leafList, routingTable)
+    //  println("Join Leaf set , next hop is same");
+      sender ! ("Terminate", leafList, routingTable,ownPeerNumber)
     }
    
     return true
@@ -287,6 +327,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
 	if(dest!=null){
 	  var temp=Integer.parseInt(dest,16)
 	  var destRef=context.actorSelection("../"+temp)
+	 // println("Join routing found the hop " + temp + "for newly joined peer " + newPeer);
 	  sender ! ("Join_nextHop",destRef, leafList , routingTable , ownPeerNumber)
 	  return true
 	}
@@ -320,7 +361,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
       for(count1 <- 0 until numOfRowsRouting){
         
         for(count2 <- 0 until numOfColumns){
-          if(routingTable (count1)(count2)!=null && !routingTable (count1)(count2).equalsIgnoreCase("special"))
+          if(routingTable (count1)(count2)!=null && !routingTable (count1)(count2).equalsIgnoreCase("SPECIAL"))
           unionSet = unionSet.+(Integer.parseInt(routingTable(count1)(count2), 16))
           
         }
@@ -347,6 +388,8 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
         }
         
       }
+    //  println("Third case join, destination is  "+ nextHop + "for peer " + newPeer);
+      
       var destRef=context.actorSelection("../"+nextHop)
 	  sender ! ("Join_nextHop", destRef, leafList, routingTable, ownPeerNumber)
       
@@ -388,7 +431,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
     leafList = left :+ ownPeerNumber
     leafList = leafList ++ right
     leafList = leafList.sorted
-  //  println("Size of the leaf set is " + leafList);
+ // println("Size of the leaf set is " + leafList+"    my peer id is "+ownPeerNumber);
     
     /**
      * Copy the rows from the routing table ONLY till the point the prefix matches
@@ -398,7 +441,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
     /**
      * Because prefixMatch returns the position number from when they start to distinguish
      */
-    //row = row - 1
+   
     
     for(count1 <- 0 until row){
       
@@ -407,8 +450,8 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
         /**
          * If the routing table entry is null ONLY then copy the entry
          */
-        if(routingTable(count1)(count2) == null){
-          
+        if(routingTable(count1)(count2) == null ){
+        //  if(routingTablesOfHop(count1)(count2)!=null && !routingTablesOfHop(count1)(count1).equalsIgnoreCase("SPECIAL"))
           routingTable (count1)(count2) = routingTablesOfHop(count1)(count2)
           
         }
@@ -432,10 +475,10 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
     	 columnToPutSenderEntry = columnToPutSenderEntry -'0'
      }
     // println("My peer number is " + ownPeerNumber + " row :: " + row + " col :: "+ columnToPutSenderEntry + " and entry is " + routingTable(row)(columnToPutSenderEntry))
-     if(routingTable (row)(columnToPutSenderEntry) == null){
+   //  if(routingTable (row)(columnToPutSenderEntry) == null){
        
        routingTable (row)(columnToPutSenderEntry) = prependZeros(senderPeer)
-     }
+     //}
     
   }
   
@@ -468,6 +511,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
    */
   def routeMessageViaLeafSet(newPeer:BigInt, hopCount:Int):Boolean = {
     
+   // println("Checking in routeMessageViaLeafSet for peer " + newPeer + " in leaf set of "+ ownPeerNumber + " leaf set is "+ leafList);
     var sortedList = leafList.sorted
      /*
      * check if the key lies in the leafset range
@@ -504,7 +548,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
       
       var nextHopRef=context.actorSelection("../"+nextHop)
       var newHopCount = hopCount + 1
-      println("Sent by " + ownPeerNumber + " to " + nextHop + " with hop count" + newHopCount)
+   //   println("Sent by " + ownPeerNumber + " to " + nextHop + " with hop count" + newHopCount)
       
       nextHopRef ! ("Route",newPeer, newHopCount)
       
@@ -515,7 +559,10 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
        * So send terminate message and your state tables to the new node..... sender !
        */
       
-      println("Message received from blah with number of hop count" + hopCount);
+    //  println("Message received with number of hop count" + hopCount);
+      
+      context.parent ! ("Received the message", hopCount);
+      
     }
    
     return true
@@ -538,7 +585,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
 	  var temp=Integer.parseInt(dest,16)
 	  var destRef=context.actorSelection("../"+temp)
 	  var newHopCount = hopCount + 1
-	  println("In routing Sent by " + ownPeerNumber + " to " + temp + " with hop count" + newHopCount)
+	  //println("In routing Sent by " + ownPeerNumber + " to " + temp + " with hop count" + newHopCount + "for peer " + newPeer)
 	  destRef ! ("Route",newPeer, newHopCount)
 	  return true
 	}
@@ -559,8 +606,8 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
       for(count1 <- 0 until numOfRowsRouting){
         
         for(count2 <- 0 until numOfColumns){
-          if(routingTable (count1)(count2)!=null && !routingTable (count1)(count2).equalsIgnoreCase("special"))
-          unionSet = unionSet.+(Integer.parseInt(routingTable(count1)(count2), 16))
+          if(routingTable (count1)(count2)!=null && !routingTable (count1)(count2).equalsIgnoreCase("SPECIAL"))
+          unionSet = unionSet+(Integer.parseInt(routingTable(count1)(count2), 16))
           
         }
       }
@@ -586,11 +633,28 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt) extends Actor{
         }
         
       }
-      var destRef=context.actorSelection("../"+nextHop)
-      var newHopCount=hopCount+1
-      println("In third case Sent by " + ownPeerNumber + " to " + nextHop + " with hop count" + newHopCount)
-	  destRef ! ("Route",newPeer,newHopCount)
+      if(nextHop != ownPeerNumber){
+	      var destRef=context.actorSelection("../"+nextHop)
+	      var newHopCount=hopCount+1
+	     // println("In third case Sent by " + ownPeerNumber + " to " + nextHop + " with hop count" + newHopCount + "for peer "+ newPeer)
+		  destRef ! ("Route",newPeer,newHopCount)
+	  }else{
+	    /**
+       * This is the terminating condition since you found the closest neighbor.
+       * So send terminate message and your state tables to the new node..... sender !
+       */
+      
+//		  println("In third case Message received with number of hop count" + hopCount);
+//		  
+//		  println("dest is "+newPeer+ "curr id "+ownPeerNumber)
+//		  
+//		  println("leafset is "+leafList)
+      
+		  context.parent ! ("Received the message", hopCount);
+      
+	  }
       
   }
+  
   
 }
