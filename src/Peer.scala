@@ -61,6 +61,11 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
     
   def receive ={
     
+    case ("debug")=>
+      //println("---------------------------------------")
+      println(ownPeerNumber +"-->"+  leafList  )
+      //println("---------------------------------------")
+    
     case ("Create State Tables", entryPoint:ActorSelection) =>
    
         entryPoint ! ("Join", ownPeerNumber)
@@ -98,14 +103,14 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
        */
       updateStateTables (leafSetOfHop , routingTablesOfHop, senderPeer)
       
-    case ("Route", destination:BigInt, hopCount:Int) =>
+    case ("Route", destination:BigInt, hopCount:Int,sender:BigInt) =>
       
        var checkRouting=routeMessageViaLeafSet(destination,hopCount)
        if(!checkRouting)
        {
     	   var routingFlag=routeMessageViaRoutingTable(destination, hopCount)
     	   if(!routingFlag){
-        	routeToClosestMatch(destination, hopCount)
+        	routeToClosestMatch(destination, hopCount,sender)
            }
        }
       
@@ -160,7 +165,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
             			  /**
             			   * Send a route message to route the request
             			   */
-            			  self ! ("Route", destination, 0)
+            			  self ! ("Route", destination, -1,ownPeerNumber )
             			  loop.break
             		  }
             	  }
@@ -271,8 +276,8 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
    /*
     * code to find the closest logical equivalent
     */
-    var nextHop:BigInt=ownPeerNumber
-    var minDiff:BigInt=(newPeer-ownPeerNumber).abs
+    var nextHop:BigInt=sortedList(0)
+    var minDiff:BigInt=(newPeer-sortedList(0)).abs
     for(leafCheck<-sortedList){
 		if(leafCheck!=newPeer){
 		 
@@ -354,6 +359,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
      * numerically closest in that 
      */
       var unionSet = leafList.toSet
+      var row=prefixMatch(ownPeerNumber , newPeer)
      /**
      * Convert hex entries to decimal and add the data to union set
      */
@@ -373,20 +379,24 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
       /**
        * Now that the sets are combined, find the numerically closer
        */
+      
+       var loop=new Breaks
+              loop.breakable {
       for(iterateSet <- unionSet){
         
         if(iterateSet != newPeer){
-          
+            var test=prefixMatch(iterateSet, newPeer)
           var diff:BigInt = (newPeer-iterateSet).abs
-          if(diff < mindiff){
+          if(diff < mindiff&&test>=row){
             
             mindiff = diff
             nextHop = iterateSet
-            
+          //  loop.break
           }
           
         }
         
+      }
       }
     //  println("Third case join, destination is  "+ nextHop + "for peer " + newPeer);
       
@@ -467,18 +477,19 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
      
      var columnToPutSenderEntry:Int = prependZeros(senderPeer).charAt(row)
      /**
+    		 columnToPutSenderEntry = columnToPutSenderEntry -'a' + 10
       * This variable represents the column in which we can put sender peer entry
       */
      if(columnToPutSenderEntry >='a'){
-    	 columnToPutSenderEntry = columnToPutSenderEntry -'a' + 10
+       columnToPutSenderEntry=columnToPutSenderEntry-'a'+10
      }else{
     	 columnToPutSenderEntry = columnToPutSenderEntry -'0'
      }
     // println("My peer number is " + ownPeerNumber + " row :: " + row + " col :: "+ columnToPutSenderEntry + " and entry is " + routingTable(row)(columnToPutSenderEntry))
-   //  if(routingTable (row)(columnToPutSenderEntry) == null){
+     if(routingTable (row)(columnToPutSenderEntry) == null){
        
        routingTable (row)(columnToPutSenderEntry) = prependZeros(senderPeer)
-     //}
+     }
     
   }
   
@@ -510,6 +521,14 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
    * newPeer is the destination peer here.
    */
   def routeMessageViaLeafSet(newPeer:BigInt, hopCount:Int):Boolean = {
+   
+    if(newPeer==ownPeerNumber ){
+ //     println("Message received with number of hop count" + hopCount);
+      
+      context.parent ! ("Received the message", hopCount);
+      return true;
+    }
+    
     
    // println("Checking in routeMessageViaLeafSet for peer " + newPeer + " in leaf set of "+ ownPeerNumber + " leaf set is "+ leafList);
     var sortedList = leafList.sorted
@@ -527,8 +546,8 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
    /*
     * code to find the closest logical equivalent
     */
-    var nextHop:BigInt=ownPeerNumber
-    var minDiff:BigInt=(newPeer-ownPeerNumber).abs
+    var nextHop:BigInt=sortedList(0)
+    var minDiff:BigInt=(newPeer-sortedList(0)).abs
     for(leafCheck<-sortedList){
 		//if(leafCheck!=newPeer){
 		 
@@ -550,7 +569,7 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
       var newHopCount = hopCount + 1
    //   println("Sent by " + ownPeerNumber + " to " + nextHop + " with hop count" + newHopCount)
       
-      nextHopRef ! ("Route",newPeer, newHopCount)
+      nextHopRef ! ("Route",newPeer, newHopCount,ownPeerNumber )
       
       
     }else{
@@ -586,18 +605,19 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
 	  var destRef=context.actorSelection("../"+temp)
 	  var newHopCount = hopCount + 1
 	  //println("In routing Sent by " + ownPeerNumber + " to " + temp + " with hop count" + newHopCount + "for peer " + newPeer)
-	  destRef ! ("Route",newPeer, newHopCount)
+	  destRef ! ("Route",newPeer, newHopCount,ownPeerNumber )
 	  return true
 	}
 	return false
     
   }
   
-  def routeToClosestMatch(newPeer:BigInt,hopCount:Int){
+  def routeToClosestMatch(newPeer:BigInt,hopCount:Int,sender:BigInt){
     /**
      * Take union of Leaf set and routing table and find the 
      * numerically closest in that 
      */
+    var row=prefixMatch(ownPeerNumber, newPeer)
       var unionSet = leafList.toSet
      /**
      * Convert hex entries to decimal and add the data to union set
@@ -612,45 +632,52 @@ class Peer(val ownPeerNumber:BigInt, val totalNumOfPeers:BigInt, var totalNumOfR
         }
       }
       
-      var nextHop:BigInt = ownPeerNumber 
-      var mindiff:BigInt = (newPeer-ownPeerNumber).abs 
+      var nextHop:BigInt = ownPeerNumber  
+      var mindiff:BigInt = (newPeer-ownPeerNumber ).abs 
       
       /**
        * Now that the sets are combined, find the numerically closer
        */
+      var flag=false
+      var loop=new Breaks
+              loop.breakable {
       for(iterateSet <- unionSet){
         
-        if(iterateSet != newPeer){
+        if(iterateSet != newPeer&&iterateSet!=sender){
+          
+        
           
           var diff:BigInt = (newPeer-iterateSet).abs
-          if(diff < mindiff){
+          var test=prefixMatch(iterateSet, newPeer)
+          if(diff < mindiff&&test>=row){
             
             mindiff = diff
             nextHop = iterateSet
-            
+   //       loop.break
           }
           
         }
         
       }
+      }
       if(nextHop != ownPeerNumber){
 	      var destRef=context.actorSelection("../"+nextHop)
 	      var newHopCount=hopCount+1
-	     // println("In third case Sent by " + ownPeerNumber + " to " + nextHop + " with hop count" + newHopCount + "for peer "+ newPeer)
-		  destRef ! ("Route",newPeer,newHopCount)
+	//      println("In third case Sent by " + ownPeerNumber + " to " + nextHop + " with hop count" + newHopCount + "for peer "+ newPeer)
+		  destRef ! ("Route",newPeer,newHopCount,ownPeerNumber )
 	  }else{
 	    /**
        * This is the terminating condition since you found the closest neighbor.
        * So send terminate message and your state tables to the new node..... sender !
        */
       
-//		  println("In third case Message received with number of hop count" + hopCount);
+		  println("ERROR   In third case Message received with number of hop count" + hopCount);
 //		  
 //		  println("dest is "+newPeer+ "curr id "+ownPeerNumber)
 //		  
 //		  println("leafset is "+leafList)
       
-		  context.parent ! ("Received the message", hopCount);
+//		  context.parent ! ("Received the message", hopCount);
       
 	  }
       

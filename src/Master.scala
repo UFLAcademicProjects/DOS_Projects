@@ -63,10 +63,12 @@ class Master(val numOfPeers: BigInt, val numOfRequests:Long) extends Actor{
       	  /**
       	   * Create the subsequent peer
            */
-      	  var actorName=random.nextInt(50000)
-      	  while(actorList.contains(actorName))
-      	    actorName=random.nextInt(50000)
+//      	  var actorName=random.nextInt(50000)
+//      	  while(actorList.contains(actorName))
+//      	    actorName=random.nextInt(50000)
+//      	  
       	  
+      	  var actorName=count
           var newCreatedPeer = context.
             actorOf(Props(new Peer(actorName, numOfPeers, numOfRequests)), name = actorName.toString);
       	  var randomNeighbor = random.nextInt(actorList.size)
@@ -83,6 +85,7 @@ class Master(val numOfPeers: BigInt, val numOfRequests:Long) extends Actor{
       	  for (peer <- actorList){
       	    var actorSel : ActorSelection = context.actorSelection(peer.toString)
       	    actorSel ! ("Start Scheduler",actorList)
+      	    // actorSel ! ("debug")
       	    
       	   // Thread.sleep(100);
       	  }
@@ -91,7 +94,7 @@ class Master(val numOfPeers: BigInt, val numOfRequests:Long) extends Actor{
       	
     case ("Received the message", hopCount:Int) =>
       
-      if(notificationReceivedFrom < totalMessagesInNetwork-((2*numOfRequests))){
+      if(notificationReceivedFrom < totalMessagesInNetwork-1){
           
     	  totalHopCounts = totalHopCounts + hopCount;
     	  notificationReceivedFrom  += 1;
@@ -105,7 +108,7 @@ class Master(val numOfPeers: BigInt, val numOfRequests:Long) extends Actor{
          */
     	// println("hopcount is "+totalHopCounts+ " notifs received "+notificationReceivedFrom)
     	 if(printFlag){
-    		 println("Average number of hopcount is " + totalHopCounts/notificationReceivedFrom);
+    		 println("Average number of hopcount is " + totalHopCounts.doubleValue/notificationReceivedFrom.doubleValue);
     		 printFlag = false;
     	 }
          
